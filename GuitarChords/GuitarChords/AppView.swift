@@ -7,42 +7,6 @@
 
 import SwiftUI
 
-struct TabBarView: View {
-    var body: some View {
-        TabView {
-            NavigationView {
-                ChordsLibraryView()
-                    .navigationBarTitle(
-                        Text("Chords library"), displayMode: .inline
-                    )
-            }.tabItem {
-                Image("library").renderingMode(.template)
-                Text("Chords library").font(.headline)
-            }
-            NavigationView {
-                MakeSequenceView()
-                    .navigationBarTitle(
-                        Text("Make sequence"), displayMode: .inline
-                    )
-            }.tabItem {
-                Image("make").renderingMode(.template)
-                Text("Make sequence")
-                    .font(.custom("Lato-Regular", size: 18))
-            }
-            NavigationView {
-                YourSequencesView()
-                    .navigationBarTitle(
-                        Text("Your sequences"), displayMode: .inline
-                    )
-            }.tabItem {
-                Image("user").renderingMode(.template)
-                Text("Your sequences")
-                    .font(.custom("Lato-Regular", size: 18))
-            }
-        }.accentColor(Color("Blue2"))
-    }
-}
-
 struct AppView: View {
     init() {
         setupLayout()
@@ -52,13 +16,60 @@ struct AppView: View {
     }
 }
 
-struct ContentView_Previews: PreviewProvider {
-    static var previews: some View {
-        Group {
-            AppView()
+// MARK: - Private
+
+private struct NavigationViewWithRootView<Content: View>: View {
+    let content: Content
+    let title: String
+    let image: String
+
+    init(image: String, title: String, @ViewBuilder content: () -> Content) {
+        self.content = content()
+        self.title = title
+        self.image = image
+    }
+
+    var body: some View {
+        NavigationView {
+            content.navigationBarTitle(Text(title), displayMode: .inline)
+        }.tabItem { makeTabItem(image: image, title: title) }
+    }
+
+    private func makeTabItem(image: String, title: String) -> some View {
+        VStack {
+            Image(image).renderingMode(.template)
+            Text(title)
+                .font(.custom("Lato-Regular", size: 18))
         }
     }
 }
+
+private struct TabBarView: View {
+    var body: some View {
+        TabView {
+            NavigationViewWithRootView(
+                image: "library",
+                title: "Chorld library"
+            ) {
+                ChordsLibraryView()
+            }
+            NavigationViewWithRootView(
+                image: "make",
+                title: "Make sequence"
+            ) {
+                MakeSequenceView()
+            }
+            NavigationViewWithRootView(
+                image: "user",
+                title: "Your sequences"
+            ) {
+                YourSequencesView()
+            }
+        }.accentColor(Color("Blue2"))
+    }
+}
+
+// MARK: - Extensions
 
 extension AppView {
     func setupLayout() {
@@ -70,5 +81,13 @@ extension AppView {
             NSAttributedString.Key.font:
                 UIFont(name: "Lato-Regular", size: 18) ?? UIFont.systemFont(ofSize: 18)
         ]
+    }
+}
+
+// MARK: - Preview
+
+struct ContentView_Previews: PreviewProvider {
+    static var previews: some View {
+        AppView()
     }
 }
